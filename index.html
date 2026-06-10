@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dansk Verbkonjugation</title>
+  <style>
+    :root {
+      --red: #c60c30;
+      --red-dark: #a00a26;
+      --red-light: #fff0f2;
+      --white: #ffffff;
+      --light: #f8f9fa;
+      --gray: #6c757d;
+      --gray-light: #dee2e6;
+      --dark: #212529;
+      --blue-soft: #f0f4ff;
+      --blue-text: #3b5bdb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--light);
+      color: var(--dark);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--red);
+      color: white;
+      padding: 1.8rem 2rem 1.4rem;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    header h1 { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.5px; }
+    header p { opacity: 0.88; margin-top: 0.35rem; font-size: 0.95rem; }
+
+    main {
+      max-width: 820px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      margin-bottom: 1.25rem;
+    }
+
+    .search-label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 0.6rem;
+      font-size: 0.95rem;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    #verbInput {
+      flex: 1;
+      padding: 0.8rem 1.1rem;
+      border: 2px solid var(--gray-light);
+      border-radius: 9px;
+      font-size: 1.1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      background: var(--light);
+    }
+
+    #verbInput:focus { border-color: var(--red); background: white; }
+
+    .btn-search {
+      padding: 0.8rem 1.6rem;
+      background: var(--red);
+      color: white;
+      border: none;
+      border-radius: 9px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.18s;
+      white-space: nowrap;
+    }
+
+    .btn-search:hover { background: var(--red-dark); }
+
+    /* ---- Result Card ---- */
+    .verb-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      gap: 0.8rem 1.5rem;
+      margin-bottom: 1.4rem;
+      padding-bottom: 1.1rem;
+      border-bottom: 2px solid var(--gray-light);
+    }
+
+    .verb-infinitiv-block { flex: 1 1 180px; }
+
+    .verb-infinitiv {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--red);
+      line-height: 1.1;
+    }
+
+    .verb-at { font-size: 1rem; color: var(--gray); font-weight: 400; margin-right: 4px; }
+
+    .verb-meaning {
+      margin-top: 0.35rem;
+      font-size: 0.92rem;
+      color: var(--gray);
+    }
+
+    .verb-meaning strong { color: var(--dark); font-weight: 600; }
+
+    .detected-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      background: var(--red);
+      color: white;
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      margin-top: 0.5rem;
+    }
+
+    .detected-word {
+      background: rgba(255,255,255,0.25);
+      padding: 0.1rem 0.4rem;
+      border-radius: 10px;
+      font-style: italic;
+    }
+
+    /* ---- Forms grid ---- */
+    .section-heading {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--gray);
+      margin: 1.1rem 0 0.7rem;
+      padding-bottom: 0.3rem;
+      border-bottom: 1px solid var(--gray-light);
+    }
+
+    .forms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .form-item {
+      padding: 0.7rem 0.9rem;
+      border-radius: 9px;
+      border-left: 4px solid var(--gray-light);
+      background: var(--light);
+      transition: transform 0.12s;
+    }
+
+    .form-item:hover { transform: translateX(3px); }
+
+    .form-item.highlight {
+      border-left-color: var(--red);
+      background: var(--red-light);
+    }
+
+    .form-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--gray);
+      margin-bottom: 0.2rem;
+    }
+
+    .form-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .form-item.highlight .form-value { color: var(--red); }
+
+    .form-sub {
+      font-size: 0.75rem;
+      color: var(--gray);
+      margin-top: 0.1rem;
+    }
+
+    /* ---- Compound tenses ---- */
+    .compound-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 0.6rem;
+    }
+
+    .compound-item {
+      padding: 0.6rem 0.8rem;
+      border-radius: 8px;
+      background: var(--light);
+    }
+
+    .compound-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      color: var(--gray);
+      margin-bottom: 0.18rem;
+    }
+
+    .compound-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    /* ---- Multiple matches ---- */
+    .match-separator {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+      color: var(--gray);
+      font-size: 0.85rem;
+    }
+    .match-separator::before, .match-separator::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--gray-light);
+    }
+
+    /* ---- Not found ---- */
+    .not-found {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--gray);
+    }
+    .not-found .nf-icon { font-size: 3rem; margin-bottom: 0.75rem; }
+    .not-found p { margin-top: 0.4rem; }
+
+    /* ---- Examples ---- */
+    .example-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.6rem;
+    }
+
+    .example-tag {
+      background: var(--blue-soft);
+      color: var(--blue-text);
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s;
+    }
+    .example-tag:hover { background: #dce4ff; }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      color: var(--gray);
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 520px) {
+      header h1 { font-size: 1.5rem; }
+      .forms-grid { grid-template-columns: 1fr 1fr; }
+      .verb-infinitiv { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🇩🇰 Dansk Verbkonjugation</h1>
+  <p>Giv en verbform — få alle tider tilbage</p>
+</header>
+
+<main>
+  <div class="card">
+    <label class="search-label" for="verbInput">Skriv en dansk verbform</label>
+    <div class="search-row">
+      <input
+        type="text"
+        id="verbInput"
+        placeholder="f.eks.&nbsp; spiste &nbsp;·&nbsp; går &nbsp;·&nbsp; skrevet &nbsp;·&nbsp; kom"
+        autocomplete="off"
+        autocorrect="off"
+        spellcheck="false"
+      />
+      <button class="btn-search" onclick="lookupVerb()">Søg</button>
+    </div>
+  </div>
+
+  <div id="result"></div>
+
+  <div class="card">
+    <div class="section-heading">Eksempler — klik for at prøve</div>
+    <div class="example-tags" id="exampleTags"></div>
+  </div>
+</main>
+
+<footer>Databasen indeholder ~65 hyppige danske verber · stærke, svage og uregelmæssige</footer>
+
+<script>
+// ============================================================
+// VERB DATABASE
+// ============================================================
+// Fields: inf, præs, præt, part, imp, en (English), de (German)
+const VERBS = [
+  // ── UREGELMÆSSIGE (Irregular) ──────────────────────────────
+  { inf:"være",    præs:"er",       præt:"var",      part:"været",    imp:"vær",    en:"be",               de:"sein" },
+  { inf:"have",    præs:"har",      præt:"havde",     part:"haft",     imp:"hav",    en:"have",             de:"haben" },
+  { inf:"gøre",    præs:"gør",      præt:"gjorde",    part:"gjort",    imp:"gør",    en:"do / make",        de:"tun / machen" },
+  { inf:"sige",    præs:"siger",    præt:"sagde",     part:"sagt",     imp:"sig",    en:"say",              de:"sagen" },
+  { inf:"vide",    præs:"ved",      præt:"vidste",    part:"vidst",    imp:"vid",    en:"know (fact)",      de:"wissen" },
+  { inf:"gå",      præs:"går",      præt:"gik",       part:"gået",     imp:"gå",     en:"go / walk",        de:"gehen" },
+  { inf:"se",      præs:"ser",      præt:"så",        part:"set",      imp:"se",     en:"see",              de:"sehen" },
+  { inf:"komme",   præs:"kommer",   præt:"kom",       part:"kommet",   imp:"kom",    en:"come",             de:"kommen" },
+  { inf:"fortælle",præs:"fortæller",præt:"fortalte",  part:"fortalt",  imp:"fortæl", en:"tell / narrate",   de:"erzählen" },
+  { inf:"vælge",   præs:"vælger",   præt:"valgte",    part:"valgt",    imp:"vælg",   en:"choose",           de:"wählen" },
+  { inf:"sælge",   præs:"sælger",   præt:"solgte",    part:"solgt",    imp:"sælg",   en:"sell",             de:"verkaufen" },
+  { inf:"bringe",  præs:"bringer",  præt:"bragte",    part:"bragt",    imp:"bring",  en:"bring",            de:"bringen" },
+  { inf:"følge",   præs:"følger",   præt:"fulgte",    part:"fulgt",    imp:"følg",   en:"follow",           de:"folgen" },
+  { inf:"spørge",  præs:"spørger",  præt:"spurgte",   part:"spurgt",   imp:"spørg",  en:"ask",              de:"fragen" },
+  { inf:"tælle",   præs:"tæller",   præt:"talte",     part:"talt",     imp:"tæl",    en:"count",            de:"zählen" },
+
+  // ── STÆRKE (Strong – vowel change) ────────────────────────
+  { inf:"skrive",  præs:"skriver",  præt:"skrev",     part:"skrevet",  imp:"skriv",  en:"write",            de:"schreiben" },
+  { inf:"tage",    præs:"tager",    præt:"tog",       part:"taget",    imp:"tag",    en:"take",             de:"nehmen" },
+  { inf:"give",    præs:"giver",    præt:"gav",       part:"givet",    imp:"giv",    en:"give",             de:"geben" },
+  { inf:"blive",   præs:"bliver",   præt:"blev",      part:"blevet",   imp:"bliv",   en:"become / stay",    de:"werden / bleiben" },
+  { inf:"løbe",    præs:"løber",    præt:"løb",       part:"løbet",    imp:"løb",    en:"run",              de:"laufen" },
+  { inf:"synge",   præs:"synger",   præt:"sang",      part:"sunget",   imp:"syng",   en:"sing",             de:"singen" },
+  { inf:"drikke",  præs:"drikker",  præt:"drak",      part:"drukket",  imp:"drik",   en:"drink",            de:"trinken" },
+  { inf:"sove",    præs:"sover",    præt:"sov",       part:"sovet",    imp:"sov",    en:"sleep",            de:"schlafen" },
+  { inf:"stå",     præs:"står",     præt:"stod",      part:"stået",    imp:"stå",    en:"stand",            de:"stehen" },
+  { inf:"ligge",   præs:"ligger",   præt:"lå",        part:"ligget",   imp:"lig",    en:"lie (down)",       de:"liegen" },
+  { inf:"sidde",   præs:"sidder",   præt:"sad",       part:"siddet",   imp:"sid",    en:"sit",              de:"sitzen" },
+  { inf:"sætte",   præs:"sætter",   præt:"satte",     part:"sat",      imp:"sæt",    en:"put / set",        de:"setzen" },
+  { inf:"lægge",   præs:"lægger",   præt:"lagde",     part:"lagt",     imp:"læg",    en:"lay / put",        de:"legen" },
+  { inf:"hedde",   præs:"hedder",   præt:"hed",       part:"heddet",   imp:"hed",    en:"be called",        de:"heißen" },
+  { inf:"finde",   præs:"finder",   præt:"fandt",     part:"fundet",   imp:"find",   en:"find",             de:"finden" },
+  { inf:"bede",    præs:"beder",    præt:"bad",       part:"bedt",     imp:"bed",    en:"ask / pray",       de:"bitten / beten" },
+  { inf:"lade",    præs:"lader",    præt:"lod",       part:"ladet",    imp:"lad",    en:"let / allow",      de:"lassen" },
+  { inf:"forstå",  præs:"forstår",  præt:"forstod",   part:"forstået", imp:"forstå", en:"understand",       de:"verstehen" },
+  { inf:"hjælpe",  præs:"hjælper",  præt:"hjalp",     part:"hjulpet",  imp:"hjælp",  en:"help",             de:"helfen" },
+  { inf:"holde",   præs:"holder",   præt:"holdt",     part:"holdt",    imp:"hold",   en:"hold / keep",      de:"halten" },
+  { inf:"bære",    præs:"bærer",    præt:"bar",       part:"båret",    imp:"bær",    en:"carry",            de:"tragen" },
+  { inf:"falde",   præs:"falder",   præt:"faldt",     part:"faldet",   imp:"fald",   en:"fall",             de:"fallen" },
+  { inf:"slå",     præs:"slår",     præt:"slog",      part:"slået",    imp:"slå",    en:"hit / beat",       de:"schlagen" },
+
+  // ── SVAGE type 2 (-te / -t) ────────────────────────────────
+  { inf:"spise",   præs:"spiser",   præt:"spiste",    part:"spist",    imp:"spis",   en:"eat",              de:"essen" },
+  { inf:"læse",    præs:"læser",    præt:"læste",     part:"læst",     imp:"læs",    en:"read",             de:"lesen" },
+  { inf:"tale",    præs:"taler",    præt:"talte",     part:"talt",     imp:"tal",    en:"speak / talk",     de:"sprechen / reden" },
+  { inf:"høre",    præs:"hører",    præt:"hørte",     part:"hørt",     imp:"hør",    en:"hear / listen",    de:"hören" },
+  { inf:"møde",    præs:"møder",    præt:"mødte",     part:"mødt",     imp:"mød",    en:"meet",             de:"treffen" },
+  { inf:"købe",    præs:"køber",    præt:"købte",     part:"købt",     imp:"køb",    en:"buy",              de:"kaufen" },
+  { inf:"rejse",   præs:"rejser",   præt:"rejste",    part:"rejst",    imp:"rejs",   en:"travel",           de:"reisen" },
+  { inf:"kende",   præs:"kender",   præt:"kendte",    part:"kendt",    imp:"kend",   en:"know (person)",    de:"kennen" },
+  { inf:"bruge",   præs:"bruger",   præt:"brugte",    part:"brugt",    imp:"brug",   en:"use",              de:"benutzen" },
+  { inf:"tænke",   præs:"tænker",   præt:"tænkte",    part:"tænkt",    imp:"tænk",   en:"think",            de:"denken" },
+  { inf:"vise",    præs:"viser",    præt:"viste",     part:"vist",     imp:"vis",    en:"show",             de:"zeigen" },
+  { inf:"betale",  præs:"betaler",  præt:"betalte",   part:"betalt",   imp:"betal",  en:"pay",              de:"bezahlen" },
+  { inf:"lære",    præs:"lærer",    præt:"lærte",     part:"lært",     imp:"lær",    en:"learn / teach",    de:"lernen / lehren" },
+  { inf:"kalde",   præs:"kalder",   præt:"kaldte",    part:"kaldt",    imp:"kald",   en:"call / name",      de:"nennen / rufen" },
+  { inf:"svare",   præs:"svarer",   præt:"svarede",   part:"svaret",   imp:"svar",   en:"answer",           de:"antworten" },
+
+  // ── SVAGE type 1 (-ede / -et) ─────────────────────────────
+  { inf:"elske",   præs:"elsker",   præt:"elskede",   part:"elsket",   imp:"elsk",   en:"love",             de:"lieben" },
+  { inf:"arbejde", præs:"arbejder", præt:"arbejdede", part:"arbejdet", imp:"arbejd", en:"work",             de:"arbeiten" },
+  { inf:"leve",    præs:"lever",    præt:"levede",    part:"levet",    imp:"lev",    en:"live",             de:"leben" },
+  { inf:"håbe",    præs:"håber",    præt:"håbede",    part:"håbet",    imp:"håb",    en:"hope",             de:"hoffen" },
+  { inf:"prøve",   præs:"prøver",   præt:"prøvede",   part:"prøvet",   imp:"prøv",   en:"try",              de:"versuchen" },
+  { inf:"ønske",   præs:"ønsker",   præt:"ønskede",   part:"ønsket",   imp:"ønsk",   en:"wish / want",      de:"wünschen" },
+  { inf:"savne",   præs:"savner",   præt:"savnede",   part:"savnet",   imp:"savn",   en:"miss",             de:"vermissen" },
+  { inf:"vente",   præs:"venter",   præt:"ventede",   part:"ventet",   imp:"vent",   en:"wait",             de:"warten" },
+  { inf:"åbne",    præs:"åbner",    præt:"åbnede",    part:"åbnet",    imp:"åbn",    en:"open",             de:"öffnen" },
+  { inf:"lukke",   præs:"lukker",   præt:"lukkede",   part:"lukket",   imp:"luk",    en:"close",            de:"schließen" },
+  { inf:"starte",  præs:"starter",  præt:"startede",  part:"startet",  imp:"start",  en:"start",            de:"starten" },
+  { inf:"stoppe",  præs:"stopper",  præt:"stoppede",  part:"stoppet",  imp:"stop",   en:"stop",             de:"stoppen" },
+  { inf:"spille",  præs:"spiller",  præt:"spillede",  part:"spillet",  imp:"spil",   en:"play",             de:"spielen" },
+  { inf:"bygge",   præs:"bygger",   præt:"byggede",   part:"bygget",   imp:"byg",    en:"build",            de:"bauen" },
+  { inf:"kaste",   præs:"kaster",   præt:"kastede",   part:"kastet",   imp:"kast",   en:"throw",            de:"werfen" },
+  { inf:"tro",     præs:"tror",     præt:"troede",    part:"troet",    imp:"tro",    en:"believe / think",  de:"glauben / denken" },
+  { inf:"bo",      præs:"bor",      præt:"boede",     part:"boet",     imp:"bo",     en:"live (reside)",    de:"wohnen" },
+  { inf:"ændre",   præs:"ændrer",   præt:"ændrede",   part:"ændret",   imp:"ændr",   en:"change / alter",   de:"ändern" },
+];
+
+// ============================================================
+// FORM METADATA
+// ============================================================
+const FORMS = [
+  { key: "inf",  label: "Infinitiv",    sub: "at …",         group: "basic" },
+  { key: "imp",  label: "Imperativ",    sub: "Bydeform",     group: "basic" },
+  { key: "præs", label: "Præsens",      sub: "Nutid",        group: "basic" },
+  { key: "præt", label: "Præteritum",   sub: "Datid",        group: "basic" },
+  { key: "part", label: "Participium",  sub: "Tillægsform",  group: "basic" },
+];
+
+// ============================================================
+// LOOKUP LOGIC
+// ============================================================
+function normalise(s) {
+  return s.trim().toLowerCase().replace(/^at\s+/, "");
+}
+
+function findMatches(raw) {
+  const q = normalise(raw);
+  if (!q) return [];
+
+  const results = [];
+  for (const verb of VERBS) {
+    for (const f of FORMS) {
+      if (verb[f.key] === q) {
+        results.push({ verb, matchedForm: f.key });
+      }
+    }
+  }
+  return results;
+}
+
+// ============================================================
+// COMPOUND TENSES (built from stored forms)
+// ============================================================
+function buildCompound(verb) {
+  return [
+    { label: "Perfektum",              value: `har ${verb.part}` },
+    { label: "Pluskvamperfektum",      value: `havde ${verb.part}` },
+    { label: "Futurum (vil)",          value: `vil ${verb.inf}` },
+    { label: "Futurum (skal)",         value: `skal ${verb.inf}` },
+    { label: "Konditionalis",          value: `ville ${verb.inf}` },
+    { label: "Passiv præsens",         value: `${verb.inf}s / bliver ${verb.part}` },
+    { label: "Passiv præteritum",      value: `blev ${verb.part}` },
+    { label: "Passiv perfektum",       value: `er blevet ${verb.part}` },
+  ];
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function esc(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function renderVerbCard(verb, matchedForm, inputWord, isFirst) {
+  const compound = buildCompound(verb);
+
+  const basicForms = FORMS.map(f => {
+    const isMatch = f.key === matchedForm;
+    const displayVal = f.key === "inf" ? `<span class="verb-at">at</span>${esc(verb.inf)}` : esc(verb[f.key]);
+    return `
+      <div class="form-item ${isMatch ? "highlight" : ""}">
+        <div class="form-label">${esc(f.label)}</div>
+        <div class="form-value">${displayVal}</div>
+        <div class="form-sub">${esc(f.sub)}</div>
+      </div>`;
+  }).join("");
+
+  const compoundForms = compound.map(c => `
+    <div class="compound-item">
+      <div class="compound-label">${esc(c.label)}</div>
+      <div class="compound-value">${esc(c.value)}</div>
+    </div>`).join("");
+
+  const matchLabel = FORMS.find(f => f.key === matchedForm)?.label ?? matchedForm;
+
+  return `
+    <div class="card">
+      <div class="verb-header">
+        <div class="verb-infinitiv-block">
+          <div class="verb-infinitiv"><span class="verb-at">at </span>${esc(verb.inf)}</div>
+          <div class="verb-meaning">
+            <strong>${esc(verb.de)}</strong> &nbsp;·&nbsp; ${esc(verb.en)}
+          </div>
+          <div class="detected-badge">
+            Genkendt som: ${esc(matchLabel)} &nbsp;<span class="detected-word">"${esc(inputWord)}"</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-heading">Grundformer</div>
+      <div class="forms-grid">${basicForms}</div>
+
+      <div class="section-heading">Sammensatte tider</div>
+      <div class="compound-grid">${compoundForms}</div>
+    </div>`;
+}
+
+function renderResult(raw, matches) {
+  const el = document.getElementById("result");
+
+  if (matches.length === 0) {
+    el.innerHTML = `
+      <div class="card not-found">
+        <div class="nf-icon">🔍</div>
+        <p><strong>"${esc(raw)}"</strong> blev ikke fundet i databasen.</p>
+        <p>Tjek stavningen eller prøv en anden form af verbet.</p>
+      </div>`;
+    return;
+  }
+
+  let html = "";
+  matches.forEach((m, i) => {
+    if (i > 0) {
+      html += `<div class="match-separator">— også muligt —</div>`;
+    }
+    html += renderVerbCard(m.verb, m.matchedForm, raw, i === 0);
+  });
+  el.innerHTML = html;
+}
+
+// ============================================================
+// ENTRY POINT
+// ============================================================
+function lookupVerb() {
+  const raw = document.getElementById("verbInput").value;
+  const matches = findMatches(raw);
+  renderResult(raw.trim(), matches);
+}
+
+// Enter key support
+document.getElementById("verbInput").addEventListener("keydown", e => {
+  if (e.key === "Enter") lookupVerb();
+});
+
+// ============================================================
+// EXAMPLE TAGS
+// ============================================================
+const EXAMPLES = [
+  "spiste","går","skrevet","kom","var","elskede",
+  "drak","forstår","sang","sæt","hjalp","lå",
+  "arbejdede","viste","bragte","fandt","holdt",
+];
+
+const tagsEl = document.getElementById("exampleTags");
+EXAMPLES.forEach(w => {
+  const btn = document.createElement("button");
+  btn.className = "example-tag";
+  btn.textContent = w;
+  btn.onclick = () => {
+    document.getElementById("verbInput").value = w;
+    lookupVerb();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+  tagsEl.appendChild(btn);
+});
+</script>
+</body>
+</html>
